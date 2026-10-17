@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI 메이커 코딩 캠프</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            900: '#1e3a8a',
+                        },
+                        darkmode: {
+                            bg: '#0f172a',
+                            panel: '#1e293b',
+                            text: '#f1f5f9'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            overflow: hidden; /* 페이지 전체 스크롤 방지 */
+            background-color: #f8fafc;
+        }
+        
+        .dark body {
+            background-color: #0f172a;
+        }
+
+        /* 부드러운 패널 스타일 */
+        .soft-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1rem;
+        }
+
+        .dark .soft-panel {
+            background: #1e293b;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 애니메이션 효과 */
+        .fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 둥근 스크롤바 */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* 선택된 탭 스타일 */
+        .tab-active {
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: 700;
+        }
+        .dark .tab-active {
+            background: #1e3a8a;
+            color: #bfdbfe;
+        }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-100 transition-colors duration-300 h-screen flex flex-col">
+
+    <header class="flex-none z-40 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm relative">
+        <div class="bg-blue-600 text-white text-xs py-1.5 px-4 text-center font-medium tracking-wide">
+            개발자 : 가치있는 미래교육연구소 대표 김병찬
+        </div>
+        
+        <div class="w-full px-4 sm:px-6">
+            <div class="flex justify-between items-center py-3 sm:py-4">
+                <div class="flex flex-col justify-center">
+                    <span id="org-name" class="text-sm sm:text-base font-bold text-blue-600 dark:text-blue-400">데이터 연결 중...</span>
+                    <h1 id="camp-name" class="text-xl sm:text-2xl lg:text-3xl font-extrabold truncate max-w-[250px] sm:max-w-lg lg:max-w-4xl mt-0.5 tracking-tight">정보를 불러오고 있습니다</h1>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <button id="admin-btn" onclick="openAdminModal()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300" title="관리자 설정">
+                        <i class="fa-solid fa-gear"></i>
+                    </button>
+                    <button id="theme-toggle" onclick="toggleTheme()" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors text-slate-600 dark:text-slate-300" title="화면 모드 변경">
+                        <i id="theme-icon" class="fa-solid fa-moon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- h-screen에서 header 높이를 뺀 나머지 영역. -->
+    <main class="flex-1 min-h-0 flex flex-col lg:flex-row gap-4 p-4 z-20">
+        
+        <!-- 사이드바 (카테고리 영역, 너비 축소) -->
+        <nav class="flex-none w-full lg:w-56 flex flex-col soft-panel overflow-hidden">
+            <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700">
+                <h2 class="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center">
+                    <i class="fa-solid fa-book-open mr-2 text-blue-500"></i> 학습 목차
+                </h2>
+            </div>
+            
+            <!-- 사이드바 내부 스크롤 -->
+            <div class="flex-1 overflow-y-auto p-3">
+                <ul class="space-y-1.5" id="nav-menu">
+                    <!-- JS 렌더링 -->
+                </ul>
+                
+                <div class="my-4 border-t border-slate-200 dark:border-slate-700"></div>
+                
+                <h2 class="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 px-2 flex items-center">
+                    <i class="fa-solid fa-cloud-arrow-down mr-2"></i> 실시간 자료실
+                </h2>
+                <ul class="space-y-1.5">
+                    <li>
+                        <button onclick="changeTab('practice')" id="tab-practice" class="nav-btn w-full flex items-center px-3 py-2.5 rounded-xl text-sm text-left text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                            <span class="w-6 flex justify-center mr-2"><i class="fa-solid fa-laptop-code text-indigo-500"></i></span> 
+                            실습 데이터
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="changeTab('reference')" id="tab-reference" class="nav-btn w-full flex items-center px-3 py-2.5 rounded-xl text-sm text-left text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all">
+                            <span class="w-6 flex justify-center mr-2"><i class="fa-solid fa-link text-emerald-500"></i></span> 
+                            참고 사이트
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 본문 영역 (내용 부분, 너비 확장) -->
+        <section class="flex-1 soft-panel relative overflow-hidden flex flex-col">
+            <div id="loader" class="absolute inset-0 bg-white/80 dark:bg-slate-800/90 flex flex-col justify-center items-center z-10 hidden backdrop-blur-sm">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-4"></i>
+                <div class="font-medium text-slate-600 dark:text-slate-300">데이터 동기화 중...</div>
+            </div>
+            
+            <!-- 본문 내부 독립 스크롤 -->
+            <div class="flex-1 overflow-y-auto p-6 sm:p-8 lg:p-10" id="content-container">
+                <!-- JS 주입 -->
+            </div>
+        </section>
+    </main>
+
+    <!-- 관리자 로그인 모달 -->
+    <div id="admin-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden flex justify-center items-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-xl relative overflow-hidden">
+            <div class="flex justify-between items-center mb-5">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+                    <i class="fa-solid fa-lock text-blue-500 mr-2"></i> 관리자 시스템
+                </h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">관리자 인증번호(PIN)를 입력해주세요.</p>
+            <input type="password" id="admin-pin-input" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" placeholder="비밀번호 입력">
+            <p id="admin-error" class="text-red-500 text-sm hidden mb-4 font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i> 인증번호가 일치하지 않습니다.</p>
+            <button onclick="verifyAdmin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors mt-2">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <!-- QR 코드 모달 -->
+    <div id="qr-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex flex-col justify-center items-center p-4 cursor-pointer" onclick="closeQrModal()">
+        <div class="bg-white p-4 rounded-2xl shadow-2xl" onclick="event.stopPropagation()">
+            <img id="qr-large-img" src="" alt="QR" class="w-64 h-64 sm:w-80 sm:h-80 object-contain">
+        </div>
+        <div class="mt-6 bg-slate-800 text-white px-4 py-2 rounded-full text-sm shadow-lg">
+            <i class="fa-solid fa-hand-pointer mr-2"></i>아무 곳이나 눌러서 닫기
+        </div>
+    </div>
+
+    <script>
+        const SHEET_ID = '1pzOtyw49Q2mCDiXpE4PZqq4812hPS1tl_4oYh4y-hIo';
+        const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
+        
+        let state = {
+            currentTab: 'part1',
+            adminPin: '',
+            orgName: '데이터 연결 중...',
+            campName: '정보를 불러오고 있습니다',
+            practiceData: [],
+            referenceData: []
+        };
+
+        // 학생 눈높이에 맞춘 친근하고 깔끔한 교재 내용
+        const curriculum = [
+            { id: 'part1', icon: 'fa-google', title: 'Part 1: 기본 설정', 
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-blue-500 pb-4 mb-6">
+                        <span class="text-blue-500 font-bold text-sm bg-blue-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 1</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">구글 & 캔바 계정 연결하기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">캠프를 시작하기 위한 가장 중요한 첫걸음입니다.</p>
+                    </div>
+                    
+                    <p class="text-base text-slate-700 dark:text-slate-300 leading-relaxed">캠프에 오신 여러분 환영합니다! 🎉 오늘 우리가 만들 멋진 작품들을 저장하고 디자인하기 위해 두 가지 마법 도구를 준비할 거예요.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+                        <div class="bg-blue-50 dark:bg-slate-700/30 p-6 rounded-2xl border border-blue-100 dark:border-slate-700">
+                            <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm text-blue-500 text-xl mb-4">1</div>
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-3">
+                                구글(Google) 로그인
+                            </h3>
+                            <ul class="space-y-3 text-slate-700 dark:text-slate-300 text-sm">
+                                <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mt-1 mr-2"></i> 크롬(Chrome) 브라우저를 열어주세요.</li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mt-1 mr-2"></i> 학교에서 받은 계정으로 로그인합니다.</li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-blue-500 mt-1 mr-2"></i> 비밀번호를 나만 알 수 있게 변경하세요.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-purple-50 dark:bg-slate-700/30 p-6 rounded-2xl border border-purple-100 dark:border-slate-700">
+                            <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-sm text-purple-500 text-xl mb-4">2</div>
+                            <h3 class="font-bold text-lg text-slate-800 dark:text-white mb-3">
+                                캔바(Canva) 연동하기
+                            </h3>
+                            <ul class="space-y-3 text-slate-700 dark:text-slate-300 text-sm">
+                                <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mt-1 mr-2"></i> 인터넷 주소창에 <strong>canva.com</strong>을 입력하세요.</li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mt-1 mr-2"></i> [구글로 계속하기] 버튼을 눌러주세요.</li>
+                                <li class="flex items-start"><i class="fa-solid fa-check text-purple-500 mt-1 mr-2"></i> 화면에 '교육용' 왕관 마크가 있는지 확인해요!</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+              `
+            },
+            { id: 'part2', icon: 'fa-wand-magic-sparkles', title: 'Part 2: 캔바 AI 활용', 
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-purple-500 pb-4 mb-6">
+                        <span class="text-purple-500 font-bold text-sm bg-purple-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 2</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">캔바 AI 활용 방법 배우기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">인공지능의 힘을 빌려 상상을 현실로 만들어봐요!</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <h3 class="font-bold text-lg mb-4 text-slate-800 dark:text-white flex items-center">
+                            <i class="fa-solid fa-pen-nib text-purple-500 mr-2"></i> 글자를 그림으로 바꾸기 (매직 미디어)
+                        </h3>
+                        <p class="text-slate-700 dark:text-slate-300 mb-4 leading-relaxed">
+                            머릿속에 있는 아이디어를 글로 적기만 하면, 캔바의 인공지능이 멋진 그림으로 그려줍니다. 좌측 메뉴에서 <strong>'앱'</strong>을 누르고 <strong>'매직 미디어'</strong>를 찾아보세요!
+                        </p>
+                        
+                        <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                            <p class="text-sm text-slate-500 mb-2 font-bold">✨ 이렇게 명령어를 적어보세요:</p>
+                            <p class="font-mono text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-slate-800 p-3 rounded-lg">
+                                "우주복을 입고 기타를 치는 귀여운 고양이, 3D 애니메이션 스타일"
+                            </p>
+                        </div>
+                    </div>
+                </div>
+              `
+            },
+            { id: 'part3', icon: 'fa-shapes', title: 'Part 3: 키링 디자인',
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-emerald-500 pb-4 mb-6">
+                        <span class="text-emerald-500 font-bold text-sm bg-emerald-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 3</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">나만의 키링 디자인하기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">레이저 각인기를 위해 도안을 만드는 세 가지 규칙</p>
+                    </div>
+                    
+                    <div class="bg-emerald-50 dark:bg-slate-800 p-6 rounded-2xl border border-emerald-200 dark:border-slate-700">
+                        <h3 class="font-bold text-lg text-emerald-700 dark:text-emerald-400 mb-5 flex items-center">
+                            <i class="fa-solid fa-triangle-exclamation mr-2"></i> 꼭 지켜야 할 디자인 규칙 3가지
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start bg-white dark:bg-slate-700 p-4 rounded-xl shadow-sm">
+                                <div class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 w-8 h-8 rounded-full flex justify-center items-center font-bold mr-4 shrink-0">1</div>
+                                <div>
+                                    <strong class="text-slate-800 dark:text-white text-base">완벽한 흑백(Black & White) 사용하기</strong>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">레이저는 색상을 인식하지 못해요. 오직 검은색은 태우고, 흰색은 태우지 않습니다.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start bg-white dark:bg-slate-700 p-4 rounded-xl shadow-sm">
+                                <div class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 w-8 h-8 rounded-full flex justify-center items-center font-bold mr-4 shrink-0">2</div>
+                                <div>
+                                    <strong class="text-slate-800 dark:text-white text-base">선은 두껍고 또렷하게</strong>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">너무 얇은 선이나 흐린 글씨는 나무에 새겨질 때 안 보일 수 있어요.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start bg-white dark:bg-slate-700 p-4 rounded-xl shadow-sm">
+                                <div class="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400 w-8 h-8 rounded-full flex justify-center items-center font-bold mr-4 shrink-0">3</div>
+                                <div>
+                                    <strong class="text-slate-800 dark:text-white text-base">투명한 배경으로 다운로드(PNG)</strong>
+                                    <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">저장할 때 꼭 '투명 배경'을 체크하고 PNG 형식으로 다운받아 선생님께 제출합니다.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+              `
+            },
+            { id: 'part4', icon: 'fa-fire-burner', title: 'Part 4: 레이저 제작',
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-red-500 pb-4 mb-6">
+                        <span class="text-red-500 font-bold text-sm bg-red-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 4</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">레이저로 나무 키링 만들기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">안전하고 신기한 메이커(Maker) 장비 체험 시간</p>
+                    </div>
+                    
+                    <div class="flex flex-col md:flex-row gap-6 items-center bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                        <div class="w-full md:w-1/3 flex justify-center py-4">
+                            <i class="fa-solid fa-fire text-6xl text-red-500"></i>
+                        </div>
+                        <div class="w-full md:w-2/3">
+                            <h3 class="text-xl font-bold mb-2 text-red-600 dark:text-red-400">⚠️ 안전 제일! 선생님과 함께 해요</h3>
+                            <p class="text-slate-700 dark:text-slate-300 mb-4 leading-relaxed">
+                                레이저 각인기는 뜨거운 빛으로 나무를 태우는 기계입니다. <strong>절대로 선생님의 허락 없이 기계에 손을 대거나 뚜껑을 열지 마세요.</strong>
+                            </p>
+                            
+                            <div class="bg-slate-50 dark:bg-slate-900 rounded-xl p-4">
+                                <h4 class="font-bold mb-3 text-slate-800 dark:text-white flex items-center">
+                                    <i class="fa-solid fa-list-ol mr-2 text-slate-500"></i> 제작 순서
+                                </h4>
+                                <ol class="space-y-2 text-sm text-slate-700 dark:text-slate-300">
+                                    <li>1. 다운받은 도안(PNG)을 각인 프로그램에 불러오기</li>
+                                    <li>2. 크기를 내 나무 키링 크기(약 40mm)에 맞게 조절하기</li>
+                                    <li>3. 선생님이 기계의 초점과 세기를 맞춰주실 때까지 기다리기</li>
+                                    <li>4. 시작 버튼을 누르고 멋지게 새겨지는 모습 관찰하기!</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              `
+            },
+            { id: 'part5', icon: 'fa-gamepad', title: 'Part 5: 내 게임 코딩',
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-indigo-500 pb-4 mb-6">
+                        <span class="text-indigo-500 font-bold text-sm bg-indigo-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 5</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">바이브 코딩으로 게임 만들기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">명령어(프롬프트)만으로 코딩하는 마법 같은 시간</p>
+                    </div>
+                    
+                    <p class="text-base text-slate-700 dark:text-slate-300 leading-relaxed">
+                        코딩 문법을 몰라도 괜찮아요! '바이브 코딩'은 우리가 평소 쓰는 말(자연어)로 AI에게 설명하면, AI가 대신 코드를 짜주는 기술입니다.
+                    </p>
+                    
+                    <div class="bg-indigo-50 dark:bg-slate-800 p-6 rounded-2xl border border-indigo-100 dark:border-slate-700 mt-4">
+                        <h3 class="font-bold text-indigo-700 dark:text-indigo-400 mb-3 flex items-center">
+                            <i class="fa-solid fa-comment-dots mr-2"></i> 이렇게 AI에게 부탁해 보세요!
+                        </h3>
+                        <div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm leading-relaxed shadow-sm">
+                            <span class="text-slate-400 dark:text-slate-500 block mb-2">/* 이 내용을 복사해서 ChatGPT나 뤼튼에 붙여넣어 보세요 */</span>
+                            "안녕! HTML, CSS, JS를 모두 하나의 파일로 만들어서 게임을 짜줘.<br>
+                            주제는 <strong>[하늘에서 떨어지는 폭탄 피하기]</strong> 게임이야.<br>
+                            내 캐릭터는 <strong>[귀여운 병아리 🐥 이모지]</strong>로 해주고,<br>
+                            스마트폰에서 할 수 있게 <strong>[화면 왼쪽/오른쪽 터치로 이동]</strong>하게 해줘.<br>
+                            배경색은 <strong>[밝은 하늘색]</strong>으로 예쁘게 꾸며줘."
+                        </div>
+                        <p class="text-sm text-slate-600 dark:text-slate-400 mt-4">
+                            AI가 만들어준 코드를 복사해서 선생님이 알려주시는 웹 편집기(CodePen 등)에 붙여넣으면 게임이 바로 켜집니다!
+                        </p>
+                    </div>
+                </div>
+              `
+            },
+            { id: 'part6', icon: 'fa-mobile-screen', title: 'Part 6: 앱 배포',
+              content: `
+                <div class="max-w-4xl mx-auto space-y-8 fade-in">
+                    <div class="border-b-2 border-pink-500 pb-4 mb-6">
+                        <span class="text-pink-500 font-bold text-sm bg-pink-50 dark:bg-slate-700 px-3 py-1 rounded-full mb-3 inline-block">Part 6</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white">NFC로 내 게임 공유하기</h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">내가 만든 키링에 스마트폰을 대면 게임이 실행됩니다!</p>
+                    </div>
+                    
+                    <p class="text-base text-slate-700 dark:text-slate-300 leading-relaxed mb-6">
+                        우리가 만든 나무 키링 뒷면에 마법의 스티커(NFC 태그)를 붙일 거예요. 교통카드처럼 스마트폰을 대기만 하면 친구들이 내 게임을 플레이할 수 있어요.
+                    </p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center shadow-sm">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-pink-100 dark:bg-slate-700 text-pink-500 flex items-center justify-center font-bold text-lg mb-3">1</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-2">게임 주소(URL) 만들기</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">내가 만든 게임 코드를 인터넷에 올려서 친구들이 들어올 수 있는 주소(링크)를 만듭니다.</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 text-center shadow-sm">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-pink-100 dark:bg-slate-700 text-pink-500 flex items-center justify-center font-bold text-lg mb-3">2</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-2">NFC 스티커에 기록하기</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">NFC 읽기/쓰기 앱을 열어서 방금 만든 게임 주소를 스티커 안에 쏙 집어넣어요.</p>
+                        </div>
+                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-pink-200 dark:border-pink-900/50 text-center shadow-sm relative overflow-hidden bg-pink-50/50 dark:bg-pink-900/10">
+                            <div class="w-12 h-12 mx-auto rounded-full bg-pink-500 text-white flex items-center justify-center font-bold text-lg mb-3 animate-pulse">3</div>
+                            <h4 class="font-bold text-slate-800 dark:text-white mb-2">스마트폰 태그하기!</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">스티커를 키링에 붙이고, 스마트폰 잠금을 푼 뒤 키링 뒷면에 가까이 대보세요!</p>
+                        </div>
+                    </div>
+                </div>
+              `
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            renderNav();
+            changeTab('part1');
+            
+            // 데이터 초고속 폴링 (1초 간격으로 실시간성 극대화)
+            fetchGoogleSheetData();
+            setInterval(fetchGoogleSheetData, 1000);
+        });
+
+        function renderNav() {
+            const navMenu = document.getElementById('nav-menu');
+            navMenu.innerHTML = curriculum.map((part, index) => `
+                <li>
+                    <button onclick="changeTab('${part.id}')" id="tab-${part.id}" class="nav-btn w-full flex items-center px-3 py-2.5 rounded-xl text-sm text-left text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-all font-semibold">
+                        <span class="w-6 flex justify-center mr-2 text-slate-400 dark:text-slate-500"><i class="fa-solid ${part.icon}"></i></span> 
+                        <span class="truncate">${part.title}</span>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        function changeTab(tabId) {
+            state.currentTab = tabId;
+            
+            // 모든 탭 스타일 초기화
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('tab-active');
+                if (btn.id === `tab-${tabId}`) {
+                    btn.classList.add('tab-active');
+                }
+            });
+
+            const contentContainer = document.getElementById('content-container');
+            
+            // 애니메이션 재실행
+            contentContainer.classList.remove('fade-in');
+            void contentContainer.offsetWidth;
+            contentContainer.classList.add('fade-in');
+
+            // 스크롤 맨 위로
+            contentContainer.scrollTop = 0; 
+
+            if (tabId.startsWith('part')) {
+                const partData = curriculum.find(p => p.id === tabId);
+                contentContainer.innerHTML = partData.content;
+            } else if (tabId === 'practice') {
+                renderDynamicData('practice');
+            } else if (tabId === 'reference') {
+                renderDynamicData('reference');
+            }
+        }
+
+        async function fetchSheetData(sheetName) {
+            const queryUrl = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+            try {
+                const response = await fetch(queryUrl);
+                const text = await response.text();
+                const jsonText = text.substring(47, text.length - 2);
+                const data = JSON.parse(jsonText);
+                return data.table.rows;
+            } catch (error) {
+                console.error(`Error fetching ${sheetName}:`, error);
+                return null;
+            }
+        }
+
+        async function fetchGoogleSheetData() {
+            // 설정 시트 (인증번호, 단체명, 연수명)
+            const settingsRows = await fetchSheetData('설정');
+            if (settingsRows && settingsRows.length > 1) {
+                const row = settingsRows[1];
+                state.adminPin = row.c[0]?.v || '';
+                state.orgName = row.c[1]?.v || '단체명 미상';
+                state.campName = row.c[2]?.v || '캠프 제목이 없습니다';
+                
+                document.getElementById('org-name').innerText = state.orgName;
+                document.getElementById('camp-name').innerText = state.campName;
+                document.title = `${state.campName} - AI 캠프`;
+            }
+
+            // 실습데이터 시트
+            const practiceRows = await fetchSheetData('실습데이터');
+            if (practiceRows) {
+                state.practiceData = practiceRows.slice(1).map(row => ({
+                    title: row.c[0]?.v || '제목 없음',
+                    link: row.c[1]?.v || ''
+                })).filter(item => item.title !== '제목 없음' || item.link !== '');
+                
+                if (state.currentTab === 'practice') renderDynamicData('practice', true);
+            }
+
+            // 참고사이트 시트
+            const refRows = await fetchSheetData('참고사이트');
+            if (refRows) {
+                state.referenceData = refRows.slice(1).map(row => ({
+                    title: row.c[0]?.v || '제목 없음',
+                    link: row.c[1]?.v || ''
+                })).filter(item => item.title !== '제목 없음' || item.link !== '');
+                
+                if (state.currentTab === 'reference') renderDynamicData('reference', true);
+            }
+        }
+
+        function renderDynamicData(type, isUpdate = false) {
+            const container = document.getElementById('content-container');
+            const currentScroll = isUpdate ? container.scrollTop : 0; // 스크롤 위치 유지
+            
+            const data = type === 'practice' ? state.practiceData : state.referenceData;
+            const title = type === 'practice' ? '실습 데이터 자료실' : '도움되는 참고 사이트';
+            const icon = type === 'practice' ? 'fa-laptop-code text-indigo-500' : 'fa-link text-emerald-500';
+            const colorClass = type === 'practice' ? 'border-indigo-500 bg-indigo-50 text-indigo-500' : 'border-emerald-500 bg-emerald-50 text-emerald-500';
+
+            let html = `
+                <div class="max-w-5xl mx-auto ${isUpdate ? '' : 'fade-in'}">
+                    <div class="border-b-2 border-slate-200 dark:border-slate-700 pb-4 mb-6">
+                        <span class="${type === 'practice' ? 'text-indigo-500 bg-indigo-50' : 'text-emerald-500 bg-emerald-50'} dark:bg-slate-700 font-bold text-sm px-3 py-1 rounded-full mb-3 inline-block">실시간 자료</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white flex items-center">
+                            <i class="fa-solid ${icon} mr-3"></i>${title}
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-2">선생님이 공유해주신 자료가 실시간으로 여기에 나타납니다.</p>
+                    </div>
+            `;
+
+            if (data.length === 0) {
+                html += `
+                    <div class="flex flex-col items-center justify-center py-20 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-600">
+                        <i class="fa-regular fa-folder-open text-4xl mb-4 text-slate-400"></i>
+                        <p class="font-medium text-slate-500">아직 등록된 자료가 없습니다.</p>
+                    </div>
+                `;
+            } else {
+                html += `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">`;
+                
+                data.forEach((item, index) => {
+                    const isLink = item.link.toString().toLowerCase().startsWith('http');
+                    // QR코드 생성 API
+                    const qrUrl = isLink ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(item.link)}` : null;
+                    const indexStr = String(index + 1);
+                    
+                    html += `
+                        <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 flex flex-col justify-between hover:shadow-lg transition-shadow">
+                            <div>
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="w-6 h-6 rounded-full ${type==='practice'?'bg-indigo-100 text-indigo-600':'bg-emerald-100 text-emerald-600'} dark:bg-slate-700 flex items-center justify-center text-xs font-bold">${indexStr}</span>
+                                    <h3 class="font-bold text-base text-slate-800 dark:text-white break-words flex-1">${item.title}</h3>
+                                </div>
+                                
+                                ${isLink 
+                                    ? `<a href="${item.link}" target="_blank" class="inline-flex items-center text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors bg-blue-50 dark:bg-slate-700/50 px-3 py-2 rounded-xl w-full justify-center">
+                                        <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> 링크 바로가기
+                                       </a>` 
+                                    : `<div class="relative group">
+                                        <div class="text-slate-600 dark:text-slate-300 text-sm break-words bg-slate-50 dark:bg-slate-900 p-3 pr-12 rounded-xl border border-slate-100 dark:border-slate-700 font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">${item.link}</div>
+                                        <button onclick="copyTextData('${type}', ${index}, this)" class="absolute right-2 top-2 w-8 h-8 flex items-center justify-center bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-sm text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors" title="원클릭 복사하기">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                       </div>`
+                                }
+                            </div>
+                            
+                            ${isLink ? `
+                            <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 flex flex-col items-center">
+                                <p class="text-xs text-slate-500 mb-2 font-medium">스마트폰으로 접속하기</p>
+                                <div class="p-2 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-blue-400 transition-colors" onclick="openQrModal('${qrUrl}')" title="클릭해서 크게 보기">
+                                    <img src="${qrUrl}" alt="QR Code" class="w-24 h-24 object-contain">
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                html += `</div></div>`;
+            }
+
+            container.innerHTML = html;
+            if (isUpdate) container.scrollTop = currentScroll;
+        }
+
+        function initTheme() {
+            // 시스템 선호도나 저장된 설정 대신 라이트모드를 기본으로
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            html.classList.remove('dark');
+            icon.classList.replace('fa-sun', 'fa-moon');
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.classList.replace('fa-sun', 'fa-moon'); // 라이트 모드일 때 달 모양(다크모드로 가는 버튼)
+            } else {
+                html.classList.add('dark');
+                icon.classList.replace('fa-moon', 'fa-sun'); // 다크 모드일 때 해 모양
+            }
+        }
+
+        function openQrModal(imgUrl) {
+            document.getElementById('qr-large-img').src = imgUrl;
+            document.getElementById('qr-modal').classList.remove('hidden');
+        }
+        function closeQrModal() {
+            document.getElementById('qr-modal').classList.add('hidden');
+        }
+
+        function openAdminModal() {
+            document.getElementById('admin-error').classList.add('hidden');
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-modal').classList.remove('hidden');
+            setTimeout(() => document.getElementById('admin-pin-input').focus(), 100);
+        }
+        
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        function verifyAdmin() {
+            const input = document.getElementById('admin-pin-input').value;
+            const errorMsg = document.getElementById('admin-error');
+            
+            if(!state.adminPin) {
+                errorMsg.innerHTML = "<i class='fa-solid fa-circle-exclamation mr-1'></i> 스프레드시트와 연결 중입니다. 잠시 후 시도하세요.";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            if (input === state.adminPin.toString()) {
+                closeAdminModal();
+                // 관리자 인증 성공 시 연결된 구글 스프레드시트로 즉시 이동
+                window.open(SHEET_URL, '_blank');
+            } else {
+                errorMsg.innerHTML = "<i class='fa-solid fa-circle-exclamation mr-1'></i> 인증번호가 일치하지 않습니다.";
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('admin-pin-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') verifyAdmin();
+        });
+
+        // 텍스트 데이터 원클릭 복사 기능
+        function copyTextData(type, index, btnElement) {
+            const data = type === 'practice' ? state.practiceData : state.referenceData;
+            const textToCopy = data[index].link;
+            
+            const textArea = document.createElement("textarea");
+            textArea.value = textToCopy;
+            // 텍스트 영역을 화면 밖으로 숨김 처리
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "-9999px";
+            document.body.appendChild(textArea);
+            
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                // IFrame 호환성을 위해 execCommand 사용
+                document.execCommand('copy');
+                
+                // 복사 성공 시 아이콘 변경 피드백
+                const icon = btnElement.querySelector('i');
+                icon.className = 'fa-solid fa-check text-emerald-500';
+                
+                // 2초 후 원래 복사 아이콘으로 복구
+                setTimeout(() => {
+                    icon.className = 'fa-regular fa-copy';
+                }, 2000);
+            } catch (err) {
+                console.error('복사 실패:', err);
+                alert('복사에 실패했습니다. 직접 드래그해서 복사해주세요.');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+    </script>
+</body>
+</html>
